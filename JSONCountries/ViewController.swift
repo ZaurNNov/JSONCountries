@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDataSource, UISearchBarDelegate {
     
     var fetchedCountry = [Country]()
     let cellIdentifier = "cell"
@@ -22,10 +22,35 @@ class ViewController: UIViewController, UITableViewDataSource {
         countryTableView.dataSource = self
         // Do any additional setup after loading the view, typically from a nib.
         parseData()
+        searchBar()
     }
     
-    override var prefersStatusBarHidden: Bool {
-        return true
+    func searchBar()
+    {
+        let search = UISearchBar(frame: CGRect(x: 0, y: 0, width: self.countryTableView.frame.size.width, height: 50))
+        search.delegate = self
+        search.showsScopeBar = true
+        search.tintColor = UIColor.lightGray
+        search.scopeButtonTitles = ["Country", "Capital"]
+        self.countryTableView.tableHeaderView = search
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        print("*** func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String)")
+        if searchText == "" {
+            parseData()
+        } else {
+            if searchBar.selectedScopeButtonIndex == 0 {
+                fetchedCountry = fetchedCountry.filter({ (country) -> Bool in
+                    return country.country.localizedLowercase.contains(searchText.localizedLowercase)
+                })
+            } else {
+                fetchedCountry = fetchedCountry.filter({ (country) -> Bool in
+                    return country.capital.localizedLowercase.contains(searchText.localizedLowercase)
+                })
+            }
+        }
+        self.countryTableView.reloadData()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -69,7 +94,7 @@ class ViewController: UIViewController, UITableViewDataSource {
                     self.fetchedCountry.append(Country(country: country, capital: capital))
                 }
                 
-                print(self.fetchedCountry.debugDescription)
+                //print(self.fetchedCountry.debugDescription)
                 self.countryTableView.reloadData()
                 
             } catch {
