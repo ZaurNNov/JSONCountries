@@ -9,15 +9,19 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
+    var fetchedCountry = [Country]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        parseData()
+        self.parseData()
     }
     
     func parseData()
     {
+        fetchedCountry = []
+        
         let urlString = "https://restcountries.eu/rest/v1/all"
         guard let url = URL(string: urlString) else {
             print("*** Can't create URL!")
@@ -32,16 +36,21 @@ class ViewController: UIViewController {
         
         let task = session.dataTask(with: request) { (data, response, error) in
             
-            if (error != nil) {
-                print(error.debugDescription)
-            } else {
+            do {
+                let fetchedData = try JSONSerialization.jsonObject(with: data!, options: .mutableLeaves) as! NSArray
                 
-                do {
-                    let fetchedData = try JSONSerialization.jsonObject(with: data!, options: .mutableLeaves) as! NSArray
-                    print(fetchedData.description)
-                } catch {
-                    print(error.localizedDescription)
+                for eachCountrys in fetchedData {
+                    let eachCountry = eachCountrys as! [String: Any]
+                    let country = eachCountry["name"] as! String
+                    let capital = eachCountry["capital"] as! String
+                    
+                    self.fetchedCountry.append(Country(country: country, capital: capital))
                 }
+                
+                print(self.fetchedCountry)
+                
+            } catch {
+                print(error.localizedDescription)
             }
         }
     }
