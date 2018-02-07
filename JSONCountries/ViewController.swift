@@ -8,21 +8,43 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource {
     
     var fetchedCountry = [Country]()
+    let cellIdentifier = "cell"
 
+    @IBOutlet weak var countryTableView: UITableView!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        countryTableView.dataSource = self
         // Do any additional setup after loading the view, typically from a nib.
-        self.parseData()
+        parseData()
+    }
+    
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return fetchedCountry.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = countryTableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        cell.textLabel?.text = fetchedCountry[indexPath.row].country
+        cell.detailTextLabel?.text = fetchedCountry[indexPath.row].capital
+        
+        return cell
     }
     
     func parseData()
     {
-        fetchedCountry = []
+        self.fetchedCountry = []
         
-        let urlString = "https://restcountries.eu/rest/v1/all"
+        let urlString = "https://restcountries.eu/rest/v2/all"
         guard let url = URL(string: urlString) else {
             print("*** Can't create URL!")
             return
@@ -47,13 +69,16 @@ class ViewController: UIViewController {
                     self.fetchedCountry.append(Country(country: country, capital: capital))
                 }
                 
-                print(self.fetchedCountry)
+                print(self.fetchedCountry.debugDescription)
+                self.countryTableView.reloadData()
                 
             } catch {
                 print(error.localizedDescription)
             }
         }
+        task.resume()
     }
+
     
 
 
